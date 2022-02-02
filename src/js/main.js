@@ -1,13 +1,11 @@
 import * as THREE from "three"
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-
-import { Curves } from 'three/examples/jsm/curves/CurveExtras.js';
 import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry.js';
-import { ParametricGeometries } from 'three/examples/jsm/geometries/ParametricGeometries.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 
-let camera, scene, renderer, stats;
+let camera, scene, renderer, stats, controls;
 
 init();
 animate();
@@ -16,9 +14,8 @@ function init() {
 
     const container = document.getElementById( 'container' );
 
-    // camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 2000 );
-    camera.position.z = 4;
+    camera.position.set( 400, 200, 0 );
 
     scene = new THREE.Scene();
 
@@ -31,13 +28,10 @@ function init() {
     camera.add( pointLight );
     scene.add( camera );
 
-    //
 
+    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, side: THREE.DoubleSide, wireframe: true} );
 
-
-    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, side: THREE.DoubleSide} );
-
-    //
+    // World
 
     let geometry, object;
 
@@ -59,6 +53,25 @@ function init() {
     container.appendChild( stats.dom );
 
     window.addEventListener( 'resize', onWindowResize );
+
+
+    // controls
+
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.listenToKeyEvents( window ); // optional
+
+    //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+
+    controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    controls.dampingFactor = 0.05;
+
+    controls.screenSpacePanning = false;
+
+    controls.minDistance = 100;
+    controls.maxDistance = 500;
+
+    controls.maxPolarAngle = Math.PI / 2;
+
 
 }
 
@@ -84,8 +97,8 @@ function render() {
 
     const timer = Date.now() * 0.0001;
 
-    camera.position.x = Math.cos( timer ) * 800;
-    camera.position.z = Math.sin( timer ) * 800;
+    // camera.position.x = Math.cos( timer ) * 800;
+    // camera.position.z = Math.sin( timer ) * 800;
 
     camera.lookAt( scene.position );
 
@@ -93,13 +106,14 @@ function render() {
 
         if ( object.isMesh === true ) {
 
-            object.rotation.x = timer * 5;
-            object.rotation.y = timer * 2.5;
+            object.rotation.x = timer * .5;
+            object.rotation.y = timer * .2;
 
 
         }
 
     } );
+    controls.update();
 
     renderer.render( scene, camera );
 
