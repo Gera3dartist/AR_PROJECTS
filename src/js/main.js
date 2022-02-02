@@ -3,9 +3,10 @@ import * as THREE from "three"
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { AnaglyphEffect } from 'three/examples/jsm/effects/AnaglyphEffect.js';
 
 
-let camera, scene, renderer, stats, controls;
+let camera, scene, renderer, stats, controls, effect;
 
 init();
 animate();
@@ -18,6 +19,8 @@ function init() {
     camera.position.set( 400, 200, 0 );
 
     scene = new THREE.Scene();
+    
+
 
     //
 
@@ -35,7 +38,7 @@ function init() {
 
     let geometry, object;
 
-    geometry = new ParametricGeometry(virichCyclicSurfaceParameterizedVector, 100, 100 );
+    geometry = new ParametricGeometry(virichCyclicSurfaceParameterizedVector, 30, 30 );
 
     geometry.center();
     object = new THREE.Mesh( geometry, material );
@@ -45,12 +48,21 @@ function init() {
 
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
+
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
 
     stats = new Stats();
     container.appendChild( stats.dom );
+    // effect
+
+
+    const width = window.innerWidth || 2;
+    const height = window.innerHeight || 2;
+
+    effect = new AnaglyphEffect( renderer );
+    effect.setSize( width, height );
 
     window.addEventListener( 'resize', onWindowResize );
 
@@ -81,6 +93,7 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
 
     renderer.setSize( window.innerWidth, window.innerHeight );
+    effect.setSize( window.innerWidth, window.innerHeight );
 
 }
 
@@ -97,9 +110,6 @@ function render() {
 
     const timer = Date.now() * 0.0001;
 
-    // camera.position.x = Math.cos( timer ) * 800;
-    // camera.position.z = Math.sin( timer ) * 800;
-
     camera.lookAt( scene.position );
 
     scene.traverse( function ( object ) {
@@ -115,7 +125,8 @@ function render() {
     } );
     controls.update();
 
-    renderer.render( scene, camera );
+    // renderer.render( scene, camera );
+    effect.render( scene, camera );
 
 }
 
