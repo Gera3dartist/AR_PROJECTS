@@ -32,7 +32,7 @@ function init() {
     scene.add( camera );
 
 
-    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, side: THREE.DoubleSide, wireframe: true} );
+    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, side: THREE.DoubleSide, wireframe: false} );
 
     // World
 
@@ -125,8 +125,8 @@ function render() {
     // } );
     controls.update();
 
-    renderer.render( scene, camera );
-    // effect.render( scene, camera );
+    // renderer.render( scene, camera );
+    effect.render( scene, camera ); -- lab2
 
 }
 
@@ -187,7 +187,7 @@ function getRotationMatrix(alpha, beta, gamma) {
 var threejs_matrix4 = new THREE.Matrix4();
 
 window.addEventListener('deviceorientation', e => {
-    console.log(`GOT EVENT END payload: {e}`)
+    console.log(`GOT EVENT END payload: ${e}`)
     var m2 = getRotationMatrix(e.alpha, e.beta, e.gamma);
 
     threejs_matrix4.set(
