@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { AnaglyphEffect } from 'three/examples/jsm/effects/AnaglyphEffect.js';
 
 
-let camera, scene, renderer, stats, controls, effect;
+let camera, scene, renderer, stats, controls, effect,  mesh_object;
 
 init();
 animate();
@@ -36,21 +36,21 @@ function init() {
 
     // World
 
-    let geometry, object;
+    let geometry;
 
     geometry = new ParametricGeometry(virichCyclicSurfaceParameterizedVector, 30, 30 );
 
     geometry.center();
-    object = new THREE.Mesh( geometry, material );
-    object.position.set( 0, 0, 0 );
-    scene.add( object );
+    mesh_object = new THREE.Mesh( geometry, material );
+    mesh_object.position.set( 0, 0, 0 );
+    scene.add( mesh_object );
 
 
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
 
     renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth/2, window.innerHeight/2 );
     container.appendChild( renderer.domElement );
 
     stats = new Stats();
@@ -112,21 +112,21 @@ function render() {
 
     camera.lookAt( scene.position );
 
-    scene.traverse( function ( object ) {
+    // scene.traverse( function ( mesh_object ) {
 
-        if ( object.isMesh === true ) {
+    //     // if ( mesh_object.isMesh === true ) {
 
-            object.rotation.x = timer * .5;
-            object.rotation.y = timer * .2;
+    //     //     mesh_object.rotation.x = timer * .5;
+    //     //     mesh_object.rotation.y = timer * .2;
 
 
-        }
+    //     // }
 
-    } );
+    // } );
     controls.update();
 
-    // renderer.render( scene, camera );
-    effect.render( scene, camera );
+    renderer.render( scene, camera );
+    // effect.render( scene, camera );
 
 }
 
@@ -151,3 +151,52 @@ function virichCyclicSurfaceParameterizedVector(t, v, target) {
     // return new THREE.Vector3(x * scale, y * scale, z * scale);
     target.set(x * scale, y * scale, z * scale)
 }
+
+
+function getRotationMatrix(alpha, beta, gamma) {
+    var degtorad = Math.PI / 180; // Degree-to-Radian conversion
+    var _x = beta ? beta * degtorad : 0; // beta value
+    var _y = gamma ? gamma * degtorad : 0; // gamma value
+    var _z = alpha ? alpha * degtorad : 0; // alpha value
+    
+    var cX = Math.cos(_x);
+    var cY = Math.cos(_y);
+    var cZ = Math.cos(_z);
+    var sX = Math.sin(_x);
+    var sY = Math.sin(_y);
+    var sZ = Math.sin(_z);
+    
+    //
+    // ZXY rotation matrix construction.
+    
+    var m11 = cZ * cY - sZ * sX * sY;
+    var m12 = -cX * sZ;
+    var m13 = cY * sZ * sX + cZ * sY;
+    
+    var m21 = cY * sZ + cZ * sX * sY;
+    var m22 = cZ * cX;
+    var m23 = sZ * sY - cZ * cY * sX;
+    
+    var m31 = -cX * sY;
+    var m32 = sX;
+    var m33 = cX * cY;
+    
+    return [m11, m12, m13, m21, m22, m23, m31, m32, m33];
+}
+    
+var threejs_matrix4 = new THREE.Matrix4();
+
+window.addEventListener('deviceorientation', e => {
+    console.log(`GOT EVENT END payload: {e}`)
+    var m2 = getRotationMatrix(e.alpha, e.beta, e.gamma);
+
+    threejs_matrix4.set(
+        m2[0], m2[1], m2[2], 0,
+        m2[3], m2[4], m2[5], 0,
+        m2[6], m2[7], m2[8], 0,
+        0, 0, 0, 1
+    );
+    mesh_object.rotation.setFromRotationMatrix(threejs_matrix4);
+
+    renderer.render(scene, camera);
+});
